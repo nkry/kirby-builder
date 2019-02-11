@@ -50,4 +50,5 @@
 
 .block-sort * .builder--slideshow--img {
   margin-right: .25em !important;
-  width: 40px !important;
+  width: 100px !important;
+}
