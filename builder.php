@@ -9,7 +9,8 @@ class BuilderField extends StructureField {
       'builder.js'
     ),
     'css' => array(
-      'builder.css'
+      'builder.css',
+      'view.css'
     )
   );
 

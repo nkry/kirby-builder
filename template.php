@@ -8,6 +8,17 @@
     <?php echo $field->headline() ?>
   </div>
 
+  <div class="builder-view-buttons">
+    <span class = "builder-view-button-preview view-button-active">Preview</span>
+    <span>/</span>
+    <span class = "builder-view-button-sort">Sort</span>
+  </div>
+
+  <div class="builder-update-msg">
+    You've changed the order over the content! Don't forget to hit save or your changes will be lost
+  </div>
+
+
   <div class="structure-entries builder-entries">
 
     <?php if(!$field->entries()->count()): ?>

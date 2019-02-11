@@ -1,0 +1,53 @@
+.builder-view-buttons {
+  margin-bottom: 1em;
+}
+
+.builder-view-button-sort:hover {
+  cursor: pointer;
+  color: #8dae28;
+}
+
+.builder-view-button-preview:hover {
+  cursor: pointer;
+  color: #8dae28;
+}
+
+.view-button-active {
+  color: #8dae28;
+}
+
+.builder-update-msg {
+  z-index: 1000;
+  color: white;
+  display: none;
+  position: fixed;
+  width: 350px;
+  padding: 1rem;
+  text-align: center;
+  background: #8dae28;
+  font-family: "Source Sans Pro","Apple LiGothic Medium","Microsoft JhengHei UI","Helvetica Neue",Arial,sans-serif;
+  font-weight: 600;
+  top: 50%;
+  left: 50%;
+  /* may need to prefix */
+  transform: translateX(-50%) translateY(-50%);
+}
+
+.block-sort {
+  padding: .5em !important;
+  height: 60px !important;
+  overflow: hidden !important;
+}
+
+.block-sort * {
+  font-size: 12px !important;
+  line-height: 1.2em !important;
+}
+
+.block-sort * .embed__thumb {
+  max-height: 15%;
+}
+
+.block-sort * .builder--slideshow--img {
+  margin-right: .25em !important;
+  width: 40px !important;

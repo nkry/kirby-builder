@@ -1,67 +1,123 @@
-(function($) {
+(function ($) {
 
-  var Builder = function(element) {
+  var sortView = false;
 
-    var element  = $(element);
+  var Builder = function (element) {
+
+    var element = $(element);
     var dropDown = element.find('.builder-drop-down');
-    var style    = element.data('style');
-    var api      = element.data('api');
+    var style = element.data('style');
+    var api = element.data('api');
     var sortable = element.data('sortable');
-    var entries  = style == 'table' ? element.find('.structure-table tbody') : element.find('.structure-entries');
-    
-    if(sortable === false) return false;
+    var entries = style == 'table' ? element.find('.structure-table tbody') : element.find('.structure-entries');
+    var updateMsg = $(document).find('.builder-update-msg');
+
+    if (sortable === false) return false;
 
     var offsetFix = false
 
     entries.sortable({
-      start: function(e, ui){
+      start: function (e, ui) {
         offsetFix = (ui.helper.position().top != ui.originalPosition.top)
-        if(offsetFix){
-          ui.item.css('margin-top', -$('.mainbar').scrollTop() );
+        if (offsetFix) {
+          ui.item.css('margin-top', -$('.mainbar').scrollTop());
         }
       },
-      beforestop: function(e, ui){
-        if(offsetFix){
+      beforestop: function (e, ui) {
+        if (offsetFix) {
           ui.item.css('margin-top', 0);
         }
       },
-      change: function(e, ui){
-        if(offsetFix){
+      change: function (e, ui) {
+        if (offsetFix) {
           ui.item.css('margin-top', 0);
         }
       },
-      stop: function(e, ui){
-        if(offsetFix){
+      stop: function (e, ui) {
+        if (offsetFix) {
           ui.item.css('margin-top', 0);
         }
       },
-      helper: function(e, ui) {
-        ui.children().each(function() {
+      helper: function (e, ui) {
+        ui.children().each(function () {
           $(this).width($(this).width());
         });
         return ui.addClass('structure-sortable-helper');
       },
-      update: function() {
+      update: function () {
 
         var ids = [];
 
-        $.each($(this).sortable('toArray'), function(i, id) {
+        $.each($(this).sortable('toArray'), function (i, id) {
           ids.push(id.replace('structure-entry-', ''));
         });
 
-        $.post(api, {ids: ids}, function() {
-          app.content.reload();
+        $.post(api, { ids: ids }, function () {
+          // just don't reload; send a msg requesting a save instead
+          // app.content.reload();
+          updateMsg.show();
+          setTimeout(function (event) {
+            updateMsg.hide();
+          }, 1500);
         });
+      }
+    });
 
+    // --- extension ---
+
+    function setView(sort) {
+      if (sort) {
+        $('.builder-view-button-sort').addClass('view-button-active');
+        $('.builder-view-button-preview').removeClass('view-button-active');
+        $('.builder--block').each(function (i, item) {
+          $('.builder--block').eq(i).closest('div[class^="structure-entry"]').addClass('block-sort');
+        })
+        // hide edit/add btns
+        $('.builder .structure-entry-options').hide();
+      }
+      else if (!sort) {
+        $('.builder-view-button-preview').addClass('view-button-active');
+        $('.builder-view-button-sort').removeClass('view-button-active');
+        $('.builder--block').each(function (i, item) {
+          $('.builder--block').eq(i).closest('div[class^="structure-entry"]').removeClass('block-sort');
+        })
+        // show edit/add btns
+        $('.builder .structure-entry-options').show();
+      }
+    }
+
+    setView(sortView);
+
+    $(document).on('click', '.builder-view-button-sort', function (e) {
+      if (!sortView) {
+        $(this).addClass("view-button-active");
+        $(".builder-view-button-preview").removeClass("view-button-active");
+        sortView = true;
+        setView(sortView);
+      }
+      else {
+        return false;
+      }
+    });
+
+    $(document).on('click', '.builder-view-button-preview', function (e) {
+      if (sortView) {
+        $(this).addClass("view-button-active");
+        $(".builder-view-button-preview").removeClass("view-button-active");
+        sortView = false;
+        setView(sortView);
+      }
+      else {
+        return false;
       }
     });
   };
 
-  $.fn.builder = function() {
+  $.fn.builder = function () {
     // $.fn.structure.call(this);
-    return this.each(function() {
+    return this.each(function () {
 
-      if($(this).data('builder')) {
+      if ($(this).data('builder')) {
         return $(this);
       } else {
         var builder = new Builder(this);
@@ -72,29 +128,29 @@
     });
 
   };
-  $(document).on('click','.builder-entry [data-quickform]',function(e){
+  $(document).on('click', '.builder-entry [data-quickform]', function (e) {
     e.preventDefault();
     var formUrl = $(this).attr('data-href')
     var builderEntry = $(this).closest('.builder-entry')
     var builderEntryContent = builderEntry.find('.builder-entry-content')
     var builderEntryOptions = builderEntry.find('.builder-entry-options')
     var quickformContainer = builderEntry.find('.builder-entry-quickform-container')
-    placeQuickform(formUrl, quickformContainer, function(){
+    placeQuickform(formUrl, quickformContainer, function () {
       builderEntryContent.addClass('hidden')
       builderEntryOptions.addClass('hidden')
     });
     return false;
   });
-  $(document).on('click','.builder-add-buttons [data-quickform]',function(e){
+  $(document).on('click', '.builder-add-buttons [data-quickform]', function (e) {
     e.preventDefault();
     var formUrl = $(this).attr('data-href')
     var builder = $(this).closest('[data-field="builder"]')
     var quickformContainer = builder.find('.builder-add-container .builder-entry-quickform-container')
     builder.find('.builder-add-container').removeClass('hidden')
-    placeQuickform(formUrl, quickformContainer, function(){});
+    placeQuickform(formUrl, quickformContainer, function () { });
     return false;
   });
-  $(document).on('click', '.quickform .btn-submit', function(e){
+  $(document).on('click', '.quickform .btn-submit', function (e) {
     e.preventDefault();
     var fieldID = $(this).closest('.builder-entry').find('.builder-entry-quickform-container').data('quickform-container')
     var data = $('.quickform form').serialize().split(fieldID + '-').join('');
@@ -104,21 +160,21 @@
       type: "POST",
       url: url + urlParamSeparator,
       data: data,
-      success: function(){
+      success: function () {
         app.content.reload();
       }
     });
     return false
   })
 
-  getMainButtonBar = function(){
+  getMainButtonBar = function () {
     var mainForm = $('form.form')
     var mainSaveButton = mainForm.find('[type="submit"]')
     return mainSaveButton.closest('.buttons-centered')
   }
 
-  placeQuickform = function(formUrl, $container, callback){
-    $.get( formUrl, function( data ) {
+  placeQuickform = function (formUrl, $container, callback) {
+    $.get(formUrl, function (data) {
       var mainButtonBar = getMainButtonBar()
       mainButtonBar.addClass('hidden')
       $container.removeClass('hidden')
@@ -128,11 +184,11 @@
       blockOtherFields($container)
       $container.html(quickform)
       var quickformFields = quickform.find('[name]')
-      quickformFields.each(function(){
+      quickformFields.each(function () {
         //we add the field id to the the field's names to prevent duplicate naming with fields from the surrounding main form.
         $(this).attr('name', fieldID + '-' + $(this).attr('name'))
       });
-      quickform.find('*[data-field]').each(function(i, element){
+      quickform.find('*[data-field]').each(function (i, element) {
         // run field's javascript
         $(element)[$(element).data('field')]()
       });
@@ -141,7 +197,7 @@
     });
   }
 
-  blockOtherFields = function($container){
+  blockOtherFields = function ($container) {
     var mainForm = $('.form-blueprint-project')
     mainForm.find('.field').addClass('blocked-by-builder')
     var builderWrapper = $container.closest('[data-field="builder"]').closest('.field')
